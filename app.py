@@ -19,7 +19,7 @@ def app():
     choice = st.sidebar.selectbox('Select activities',activities)
 
     if choice == 'Enhancements':
-        st.subheader('Image Editor')
+#         st.subheader('Image Editor')
         image_file = st.file_uploader("Upload Image",type = ['jpg','png','jpeg'])
 
         if image_file is None:
