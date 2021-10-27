@@ -1,25 +1,50 @@
 import streamlit as st
 import cv2
-from PIL import Image,ImageEnhance
+from PIL import Image, ImageEnhance
+from negate import negate
 import numpy as np
 import os
 
 st.set_page_config(
-     page_title="Image Enhancement",
-     page_icon="edit.png",
- )
+    page_title="Image Enhancement",
+    page_icon="img/edit.png",
+)
+
+
 @st.cache
 def load_image(img):
     im = Image.open(img)
     return im
 
+
+def blurring(img, value):
+    value = int(value)*3
+    blur_filter = np.ones((value, value), np.float)/(value*value)
+    image_blur = cv2.filter2D(img, -1, blur_filter)
+
+    return image_blur
+
+
+def change_brightness(img, value):
+    value = value*40
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    h, s, v = cv2.split(hsv)
+    v = cv2.add(v, value)
+    v[v > 255] = 255
+    v[v < 0] = 0
+    final_hsv = cv2.merge((h, s, v))
+    img = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
+    return img
+
+
 def app():
-    st.title('Image Enhancement Editor')
     activities = ['Enhancements']
-    choice = st.sidebar.selectbox('Select activities',activities)
+    choice = st.sidebar.selectbox('Select activities', activities)
 
     if choice == 'Enhancements':
-        image_file = st.file_uploader("Upload Image",type = ['jpg','png','jpeg'])
+        st.title('Image Editor')
+        image_file = st.file_uploader(
+            "Upload Image", type=['jpg', 'png', 'jpeg'])
 
         if image_file is None:
             st.info('please upload image!!')
@@ -27,38 +52,65 @@ def app():
             if image_file is not None:
                 col1, col2 = st.columns(2)
                 our_image = Image.open(image_file)
+                # st.success(type   (our_image))
                 col1.header('Original Image')
-                col1.image(our_image,use_column_width=True)
+                col1.image(our_image, use_column_width=True)
 
-            enhance_type = st.sidebar.radio('Enhancement Types',['Original','Gray scale','Contrast','Brightness','Bluring'])
+            enhance_type = st.sidebar.radio('Enhancement Types', [
+                'Original', 'Gray scale', 'Contrast', 'Brightness',
+                'Bluring', 'Negate'])
+
             if enhance_type == 'Gray scale':
+                # st.title('Gray scale')
                 new_img = np.array(our_image.convert('RGB'))
-                img = cv2.cvtColor(new_img,1)
-                img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+                img = cv2.cvtColor(new_img, 1)
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                 col2.header('Edited Image')
-                col2.image(img,use_column_width=True)
+                col2.image(img, use_column_width=True)
 
             elif enhance_type == 'Contrast':
-                c_rate = st.sidebar.slider('Constrast',0.5,4.5)
+                # st.title('Contrast')
+                c_rate = st.sidebar.slider('Constrast', 0.5, 4.5)
                 enhancer = ImageEnhance.Contrast(our_image)
                 img_output = enhancer.enhance(c_rate)
                 col2.header('Edited Image')
-                col2.image(img_output,use_column_width=True)
+                col2.image(img_output, use_column_width=True)
 
             elif enhance_type == 'Brightness':
-                br_rate = st.sidebar.slider('Brightness',0.5,4.5)
-                enhancer = ImageEnhance.Brightness(our_image)
-                img_out = enhancer.enhance(br_rate)
+                # st.title('Brightness')
+                our_new_image = np.array(our_image)
+                br_rate = st.sidebar.slider('Brightness', -4.5, 4.5)
+                out_img = change_brightness(our_new_image, br_rate)
                 col2.header('Edited Image')
-                col2.image(img_out,use_column_width=True)
+                col2.image(out_img, use_column_width=True)
 
             elif enhance_type == 'Bluring':
-                new_img = np.array(our_image.convert('RGB'))
-                b_rate = st.sidebar.slider('Bluring',0.5,4.5)
-                img = cv2.cvtColor(new_img,1)
-                blur_img = cv2.GaussianBlur(img,(11,11),b_rate)
+                # st.title('Bluring')
+                our_new_image = np.array(our_image)
+                br_rate = st.sidebar.slider('Bluring', 1, 15)
+                out_img = blurring(our_new_image, br_rate)
                 col2.header('Edited Image')
-                col2.image(blur_img,use_column_width=True)
+                col2.image(out_img, use_column_width=True)
+
+            elif enhance_type == 'Negate':
+                # our_image = cv2.read(image_file)
+                our_image = np.array(our_image)
+                out_img = negate(our_image)
+                col2.header('Edited Image')
+                col2.image(out_img, use_column_width=True)
+                # pass
+
+            # elif enhance_type == 'dNew':
+            #     # our_image = cv2.read(image_file)
+            #     # our_new_image = cv2.cvtColor(np.array(our_image), cv2.COLOR_RGB2BGR)
+            #     our_new_image = np.array(our_image)
+            #     br_rate = st.sidebar.slider('dBrightness', -4.5, 4.5)
+            #     br_rate
+            #     out_img = change_brightness(our_new_image, br_rate)
+            #     col2.header('Edited Image')
+            #     col2.image(out_img, use_column_width=True)
+            #     # pass
+
 
 if __name__ == "__main__":
     app()
