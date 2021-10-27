@@ -5,4 +5,5 @@
 Gray scale\
 Contrast\
 Brightness\
-Bluring
+Bluring\
+Negative

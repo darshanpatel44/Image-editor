@@ -1,7 +1,6 @@
 import streamlit as st
 import cv2
 from PIL import Image, ImageEnhance
-from negate import negate
 import numpy as np
 import os
 
@@ -37,6 +36,48 @@ def change_brightness(img, value):
     return img
 
 
+def contrast_stretch(img):
+
+    if img.itemsize > 1:
+        result = np.zeros(img.shape, dtype=np.uint)
+
+    else:
+        result = np.zeros(img.shape, dtype=np.uint8)
+
+    s1 = 0
+    s2 = 255
+
+    for k in range(3):
+        r1 = img[:, :, k].min()
+        r2 = img[:, :, k].max()
+
+        for i in range(img.shape[0]):
+            for j in range(img.shape[1]):
+                pixVal = img[i, j, k]
+                newVal = (((s2-s1)*(pixVal-r1))//(r2-r1))+s1
+
+                if newVal > 0:
+                    result[i, j, k] = newVal
+
+                else:
+                    result[i, j, k] = 0
+    return result
+
+
+def negate(img):
+
+    result = copy.deepcopy(img)
+    total_channels = result.shape[2]
+
+    # Finding channel depth of image
+    bytes = result.itemsize
+    MAX_PIXEL_VAL = (2 ** (bytes*8))-1
+    for i in range(total_channels):
+        result[:, :, i] = MAX_PIXEL_VAL-result[:, :, i]
+
+    return result
+
+
 def app():
     activities = ['Enhancements']
     choice = st.sidebar.selectbox('Select activities', activities)
@@ -58,7 +99,7 @@ def app():
 
             enhance_type = st.sidebar.radio('Enhancement Types', [
                 'Original', 'Gray scale', 'Contrast', 'Brightness',
-                'Bluring', 'Negate'])
+                'Bluring', 'Negative', 'Contrast Stretching'])
 
             if enhance_type == 'Gray scale':
                 # st.title('Gray scale')
@@ -70,7 +111,7 @@ def app():
 
             elif enhance_type == 'Contrast':
                 # st.title('Contrast')
-                c_rate = st.sidebar.slider('Constrast', 0.5, 4.5)
+                c_rate = st.sidebar.slider('Constrast', -4.5, 4.5, 1.0)
                 enhancer = ImageEnhance.Contrast(our_image)
                 img_output = enhancer.enhance(c_rate)
                 col2.header('Edited Image')
@@ -79,7 +120,7 @@ def app():
             elif enhance_type == 'Brightness':
                 # st.title('Brightness')
                 our_new_image = np.array(our_image)
-                br_rate = st.sidebar.slider('Brightness', -4.5, 4.5)
+                br_rate = st.sidebar.slider('Brightness', -4.5, 4.5, 1.0)
                 out_img = change_brightness(our_new_image, br_rate)
                 col2.header('Edited Image')
                 col2.image(out_img, use_column_width=True)
@@ -87,18 +128,25 @@ def app():
             elif enhance_type == 'Bluring':
                 # st.title('Bluring')
                 our_new_image = np.array(our_image)
-                br_rate = st.sidebar.slider('Bluring', 1, 15)
+                br_rate = st.sidebar.slider('Bluring', 1, 15, 1)
                 out_img = blurring(our_new_image, br_rate)
                 col2.header('Edited Image')
                 col2.image(out_img, use_column_width=True)
 
-            elif enhance_type == 'Negate':
+            elif enhance_type == 'Negative':
                 # our_image = cv2.read(image_file)
                 our_image = np.array(our_image)
                 out_img = negate(our_image)
                 col2.header('Edited Image')
                 col2.image(out_img, use_column_width=True)
                 # pass
+
+            elif enhance_type == 'Contrast Stretching':
+                # our_image = cv2.read(image_file)
+                our_image = np.array(our_image)
+                out_img = contrast_stretch(our_image)
+                col2.header('Edited Image')
+                col2.image(out_img, use_column_width=True)
 
             # elif enhance_type == 'dNew':
             #     # our_image = cv2.read(image_file)
