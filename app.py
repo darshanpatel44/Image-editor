@@ -3,6 +3,7 @@ import cv2
 from PIL import Image, ImageEnhance
 import numpy as np
 import os
+import copy
 
 st.set_page_config(
     page_title="Image Enhancement",
@@ -69,7 +70,6 @@ def negate(img):
     result = copy.deepcopy(img)
     total_channels = result.shape[2]
 
-    # Finding channel depth of image
     bytes = result.itemsize
     MAX_PIXEL_VAL = (2 ** (bytes*8))-1
     for i in range(total_channels):
@@ -93,7 +93,6 @@ def app():
             if image_file is not None:
                 col1, col2 = st.columns(2)
                 our_image = Image.open(image_file)
-                # st.success(type   (our_image))
                 col1.header('Original Image')
                 col1.image(our_image, use_column_width=True)
 
@@ -102,7 +101,7 @@ def app():
                 'Bluring', 'Negative', 'Contrast Stretching'])
 
             if enhance_type == 'Gray scale':
-                # st.title('Gray scale')
+
                 new_img = np.array(our_image.convert('RGB'))
                 img = cv2.cvtColor(new_img, 1)
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -110,7 +109,7 @@ def app():
                 col2.image(img, use_column_width=True)
 
             elif enhance_type == 'Contrast':
-                # st.title('Contrast')
+
                 c_rate = st.sidebar.slider('Constrast', -4.5, 4.5, 1.0)
                 enhancer = ImageEnhance.Contrast(our_image)
                 img_output = enhancer.enhance(c_rate)
@@ -118,7 +117,7 @@ def app():
                 col2.image(img_output, use_column_width=True)
 
             elif enhance_type == 'Brightness':
-                # st.title('Brightness')
+
                 our_new_image = np.array(our_image)
                 br_rate = st.sidebar.slider('Brightness', -4.5, 4.5, 1.0)
                 out_img = change_brightness(our_new_image, br_rate)
@@ -126,38 +125,26 @@ def app():
                 col2.image(out_img, use_column_width=True)
 
             elif enhance_type == 'Bluring':
-                # st.title('Bluring')
+
                 our_new_image = np.array(our_image)
-                br_rate = st.sidebar.slider('Bluring', 1, 15, 1)
+                br_rate = st.sidebar.slider('Bluring', 1, 10, 1)
                 out_img = blurring(our_new_image, br_rate)
                 col2.header('Edited Image')
                 col2.image(out_img, use_column_width=True)
 
             elif enhance_type == 'Negative':
-                # our_image = cv2.read(image_file)
+
                 our_image = np.array(our_image)
                 out_img = negate(our_image)
                 col2.header('Edited Image')
                 col2.image(out_img, use_column_width=True)
-                # pass
 
             elif enhance_type == 'Contrast Stretching':
-                # our_image = cv2.read(image_file)
+
                 our_image = np.array(our_image)
                 out_img = contrast_stretch(our_image)
                 col2.header('Edited Image')
                 col2.image(out_img, use_column_width=True)
-
-            # elif enhance_type == 'dNew':
-            #     # our_image = cv2.read(image_file)
-            #     # our_new_image = cv2.cvtColor(np.array(our_image), cv2.COLOR_RGB2BGR)
-            #     our_new_image = np.array(our_image)
-            #     br_rate = st.sidebar.slider('dBrightness', -4.5, 4.5)
-            #     br_rate
-            #     out_img = change_brightness(our_new_image, br_rate)
-            #     col2.header('Edited Image')
-            #     col2.image(out_img, use_column_width=True)
-            #     # pass
 
 
 if __name__ == "__main__":
