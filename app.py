@@ -17,6 +17,19 @@ def load_image(img):
     return im
 
 
+def greyscale(img):
+
+    result = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
+
+    for i in range(img.shape[0]):
+        for j in range(img.shape[1]):
+
+            result[i, j] = (img[i, j, 0]*0.07 + img[i, j, 1]
+                            * 0.72 + img[i, j, 2] * 0.21)
+
+    return result
+
+
 def blurring(img, value):
     value = int(value)*3
     blur_filter = np.ones((value, value), np.float)/(value*value)
@@ -45,8 +58,10 @@ def contrast_stretch(img):
     else:
         result = np.zeros(img.shape, dtype=np.uint8)
 
+    bytes = img.itemsize
+
     s1 = 0
-    s2 = 255
+    s2 = (2 ** (bytes*8))-1
 
     for k in range(3):
         r1 = img[:, :, k].min()
@@ -103,8 +118,9 @@ def app():
             if enhance_type == 'Gray scale':
 
                 new_img = np.array(our_image.convert('RGB'))
-                img = cv2.cvtColor(new_img, 1)
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                img = greyscale(new_img)
+                # img = cv2.cvtColor(new_img, 1)
+                # img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                 col2.header('Edited Image')
                 col2.image(img, use_column_width=True)
 
