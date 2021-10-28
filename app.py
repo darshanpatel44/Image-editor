@@ -20,12 +20,8 @@ def load_image(img):
 def greyscale(img):
 
     result = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
-
-    for i in range(img.shape[0]):
-        for j in range(img.shape[1]):
-
-            result[i, j] = (img[i, j, 0]*0.07 + img[i, j, 1]
-                            * 0.72 + img[i, j, 2] * 0.21)
+    result[:, :] = (img[:, :, 0]*0.07 + img[:, :, 1]
+                    * 0.72 + img[:, :, 2] * 0.21)
 
     return result
 
