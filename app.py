@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as s
 import cv2
 from PIL import Image, ImageEnhance
 import numpy as np
