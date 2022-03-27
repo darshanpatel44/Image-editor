@@ -1,6 +1,6 @@
 # image-editor
 
-using Python, OpenCV and Stream
+using Python, OpenCV and Streamlit.
 
 ## Image Enhancement
 
